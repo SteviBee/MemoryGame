@@ -1,17 +1,42 @@
 const gameContainer = document.getElementById("game");
 
-const COLORS = [
-  "red",
-  "blue",
-  "green",
-  "orange",
-  "purple",
-  "red",
-  "blue",
-  "green",
-  "orange",
-  "purple"
-];
+// Make random number between 1-30:
+let numColors;
+function randomEven() {
+  numColors = (Math.floor(Math.random() * 30));
+  if (numColors > 0) {
+    return numColors = (numColors + (numColors % 2))
+  } else {
+    return numColors = 10;
+  }  
+}
+randomEven();
+
+// Making Random Colors with pairs
+let colorArray = []
+function randomColors() {
+  for (let i = 0; i < numColors; i++) {
+    let r = (Math.floor(Math.random() * 256));
+    let g = (Math.floor(Math.random() * 256));
+    let b = (Math.floor(Math.random() * 256));
+    colorArray.push(`rgb(${r},${g},${b})`)
+    colorArray.push(`rgb(${r},${g},${b})`)
+  }
+}
+randomColors();
+
+// let COLORS = [
+//   "red",
+//   "blue",
+//   "green",
+//   "orange",
+//   "purple",
+//   "red",
+//   "blue",
+//   "green",
+//   "orange",
+//   "purple"
+// ];
 
 // here is a helper function to shuffle an array
 // it returns the same array with values shuffled
@@ -36,7 +61,7 @@ function shuffle(array) {
   return array;
 }
 
-let shuffledColors = shuffle(COLORS);
+let shuffledColors = shuffle(colorArray);
 
 // this function loops over the array of colors
 // it creates a new div and gives it a class with the value of the color
@@ -56,30 +81,37 @@ function createDivsForColors(colorArray) {
     gameContainer.append(newDiv);
   }
 }
-
 // Reset Button - clears all colors and sets start to false:
 let resetButton = document.querySelector("#reset")
 resetButton.addEventListener("click", function(e) {
+  // Clear all background colors on all divs
   let clearAllDivs = document.querySelectorAll("div");
   for (const div of clearAllDivs) {
     div.removeAttribute("style");    
   }
-  let startButton = false;
-  let stop = removeEventListener("click", startEvent)
-  let stopTimer = clearInterval(startTimer)
+
+  // Reset timer, reset match amount, ableToStart
   matchesCount = []
   printTimer(0);
+  printResults();
+  ableToStart = false;
+
   // Enables start button again
   e.target.previousElementSibling.disabled = false
-  // Returns - 
+  // Question - I guess i don't need to return anything as i am invoking fns or reseting things above
+  // RON - need to explietly call the stop timer button on another EVENT 
   return {
-    stop,
-    stopTimer,
-    startButton,
-    matchesCount,
-    printResults,
-    printTimer
+    // stop,
+    // matchesCount
+    // printResults,
+    // printTimer
   };
+})
+
+
+// 2nd Reset Button - Stop Timer:
+resetButton.addEventListener("click", function(e) {
+  return  clearInterval(myTimer) 
 })
 
 // Create match function:
@@ -88,61 +120,40 @@ function handleMatch(array) {
   for (const value of array) {
     let div = document.querySelector("#removeMe")
     div.removeAttribute("id");
-    div.removeEventListener("click", handleCardClick);
+    // div.removeEventListener("click", handleCardClick);
     matchesCount.push(value);
     printResults();
+
   }
+  winActions();
   return counterArr = [];
 }
 
 // Print Timer:
+let winningTime;
 function printTimer(time) {
   let timeDisplay = document.querySelector("#timer")
+  winningTime = time;
   return timeDisplay.innerText = "Timer: " + time;
 }
 
+let ableToStart;
 // Start Button - starts timer, sets start to true, and starts counting
 let startEvent = document.querySelector("#start")
 startEvent.addEventListener("click", function(e) {
   e.target.disabled = true;
-
-  if (startButton) {
-    startTimer();
-  } else {
-    clearInterval(startTimer)
-  }
+  ableToStart = true
+  return startTimer();
 })
-
+let myTimer;
 // Create timer function:
 let startTimer = function() {  
   let countTime = 0;
-  let myTimer = setInterval(function() {
+  myTimer = setInterval(function() {
       countTime++
-      console.log(countTime); 
       return printTimer(countTime);
   }, 1000);
 }
-
-// function startTimer(e) {  
-//   e.target.disabled = true;
-//   let countTime = 0;
-//   let startButton = true;
-//   // Create timer function:
-//   let myTimer = setInterval(function() {
-//     if (startButton === true) {
-//       countTime++
-//       console.log(countTime); 
-//       return printTimer(countTime);
-//     } else {
-//       clearInterval(myTimer);
-//     }
-//   }, 1000);
-//   return {
-//     countTime,
-//     startButton,
-//     myTimer
-//   };
-// }
 
 // Record Matches:
 let matchesCount = [];
@@ -151,53 +162,76 @@ function printResults() {
   return h2.innerText = `Matches: ${matchesCount.length / 2}`;
 }
 
-// Create match function:
-function handleMatch(array) {
-
-  for (const value of array) {
-    let div = document.querySelector("#removeMe")
-    div.removeAttribute("id");
-    div.removeEventListener("click", handleCardClick);
-    matchesCount.push(value);
-    printResults();
-  }
-  return counterArr = [];
-}
-
 let counterArr = []
 function handleCardClick(event) {
-  //handel same div selected:
-  if (event.target.id) {
-    
-  } else if (counterArr.length < 2) {
-    // Change BR Color from click:
-    event.target.style.backgroundColor = event.target.classList.value;
-    // Give unique ID:
-    event.target.setAttribute("id", "removeMe")
-    counterArr.push(event.target.classList.value);
-  } 
+  // disable if start button not pressed:
+  if (ableToStart) { 
 
-  // Removes background colors of selected divs after a delay
-  if (counterArr.length >= 2) {
-    if (counterArr[0] === counterArr[1]) {
-      handleMatch(counterArr);
-    } else {
-      setTimeout(function() {
-        for (const item of counterArr) {  
-          let div = document.querySelector("#removeMe")
-          div.removeAttribute("style"); 
-          div.removeAttribute("id");      
-        }
-        return counterArr = [];
-      }, 1000);
-    };
+    //handel same div selected:
+    if (event.target.id) {
+      
+    } else if (counterArr.length < 2) {
+      // Change BR Color from click:
+      event.target.style.backgroundColor = event.target.classList.value;
+      // Give unique ID:
+      event.target.setAttribute("id", "removeMe")
+      counterArr.push(event.target.classList.value);
+    } 
+
+    // Removes background colors of selected divs after a delay
+    if (counterArr.length >= 2) {
+      if (counterArr[0] === counterArr[1]) {
+        handleMatch(counterArr);
+      } else {
+        setTimeout(function() {
+          for (const item of counterArr) {  
+            let div = document.querySelector("#removeMe")
+            div.removeAttribute("style"); 
+            div.removeAttribute("id");      
+          }
+          return counterArr = [];
+        }, 1000);
+      };
+    }
   }
 };
 
+// Creat a win condition:
+let winningMatches;
+function winActions() {
+  setTimeout(function () {
+
+    if (matchesCount.length === colorArray.length) {
+      winningMatches = matchesCount.length / 2;
+      clearInterval(myTimer) 
+      // let timeDisplay = document.querySelector("#timer")
+      console.log("the winning time is: ", winningTime)
+      alert("You Won! Press reset to try to beat your high score")
+      localStorage.setItem("winnersTime", winningTime);
+      localStorage.setItem("winnersMatches", winningMatches);
+      winDisplay();
+      }
+    }, 200)
+  };
+
+function winDisplay() {
+  let display = document.querySelector("#winDisplay")
+  winTime = localStorage.getItem("winnersTime")
+  winMatch = (localStorage.getItem("winnersMatches"))
+  if (winTime === null) {
+    
+  } else {
+  display.innerText = `Current best time is ${winTime} seconds for ${winMatch} matches`;
+  }
+}
+
+
+
+
 // when the DOM loads
 createDivsForColors(shuffledColors);
-window.addEventListener('load', 
-  function() { 
-    return startButton = true;
-  });
+// window.addEventListener('load', 
+//   function() { 
+//     return startButton = true;
+//   });
 printResults();
